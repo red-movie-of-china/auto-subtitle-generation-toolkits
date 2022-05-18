@@ -9,3 +9,4 @@ yt_dlp
 pypinyin
 srt
 ffsubsync
+pydub
