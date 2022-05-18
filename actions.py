@@ -213,60 +213,62 @@ if __name__ == "__main__":
             ui.CONFIG["JianYing_Exe_Path"] = Config["JianYing_App_Path"]
             # preprocess video
             for dir in videodirs:
-                print(dir,'=============')
                 start = time.time()
-                
-                ui.Multi_Video_Process(video_path=dir)
-                stop = time.time()
-                print('===convert srt time cost=====',stop-start)
-
-                # combine srt into whole
-                srt_list = [fn for fn in os.listdir(dir) if any(fn.endswith(format) for format in ['.srt'])]
-                final_subtitle=[]
-                td_to_shift  = datetime.timedelta(seconds=0)
-                # offset  = datetime.timedelta(seconds=0)
-                # total  = datetime.timedelta(seconds=0)
-                total=0
-                
-                for i in range(len(srt_list)):
-                    try:
-                        with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
-                            subtitles=list(srt.parse(f.read()))
-                            stream=av.open(dir+os.sep+str(i)+'.aac').streams.audio[0]
-                            duration=stream.duration/stream.time_base
-                            duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
-                            # seconds_to_shift=6000
-                            print('audio length',duration)
-                            td_to_shift = datetime.timedelta(seconds=(total))
-                            # if subtitles[-1].end>datetime.timedelta(seconds=3600):
-                            #     offset=subtitles[-1].end-datetime.timedelta(seconds=3600)
-                            #     total=total+offset
-
-                            # else:
-                            #     # offset=datetime.timedelta(seconds=0)
-                                
-                            #     offset=(datetime.timedelta(seconds=3600)-subtitles[-1].end)
-                            #     print('---------',total)
-                            #     print('=========',offset)
-                            #     total=total-offset
-
-                            print('i==',i,' 本字幕应偏移时间 ',td_to_shift,'本次偏移值',duration,'累计与标准偏移的差值',total)
-
-                            for subtitle in subtitles:
-                                subtitle.start += td_to_shift
-                                subtitle.end += td_to_shift
-                                final_subtitle.append(subtitle)
-                            
-                            total=total+duration
-
-                    except srt.SRTParseError:
-                        print('invalid srt found',i,' in this dir: ',dir)
-                
                 basepath = os.path.abspath(Config['Sources_Path'])
                 srtname=dir.split(os.sep)[-1]+'.srt'
-                print('final srt ',basepath+os.sep+srtname)
-                with open(basepath+os.sep+srtname, 'w', encoding='utf-8') as f:  f.write(srt.compose(final_subtitle))
+                if not os.path.exists(basepath+os.sep+srtname):
                 
+                    ui.Multi_Video_Process(video_path=dir)
+                    stop = time.time()
+                    print('===convert srt time cost=====',stop-start)
+
+                    # combine srt into whole
+                    srt_list = [fn for fn in os.listdir(dir) if any(fn.endswith(format) for format in ['.srt'])]
+                    final_subtitle=[]
+                    td_to_shift  = datetime.timedelta(seconds=0)
+                    # offset  = datetime.timedelta(seconds=0)
+                    # total  = datetime.timedelta(seconds=0)
+                    total=0
+                    
+                    for i in range(len(srt_list)):
+                        try:
+                            with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
+                                subtitles=list(srt.parse(f.read()))
+                                stream=av.open(dir+os.sep+str(i)+'.aac').streams.audio[0]
+                                duration=stream.duration/stream.time_base
+                                duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
+                                # seconds_to_shift=6000
+                                print('audio length',duration)
+                                td_to_shift = datetime.timedelta(seconds=(total))
+                                # try to use srt to compute offset ,but srt length is not audio file length at all
+                                # if subtitles[-1].end>datetime.timedelta(seconds=3600):
+                                #     offset=subtitles[-1].end-datetime.timedelta(seconds=3600)
+                                #     total=total+offset
+
+                                # else:
+                                #     # offset=datetime.timedelta(seconds=0)
+                                    
+                                #     offset=(datetime.timedelta(seconds=3600)-subtitles[-1].end)
+                                #     print('---------',total)
+                                #     print('=========',offset)
+                                #     total=total-offset
+
+                                print('i==',i,' 本字幕应偏移时间 ',td_to_shift,'本次偏移值',duration,'累计与标准偏移的差值',total)
+
+                                for subtitle in subtitles:
+                                    subtitle.start += td_to_shift
+                                    subtitle.end += td_to_shift
+                                    final_subtitle.append(subtitle)
+                                
+                                total=total+duration
+
+                        except srt.SRTParseError:
+                            print('invalid srt found',i,' in this dir: ',dir)
+                    
+
+                    print('final srt ',basepath+os.sep+srtname)
+                    with open(basepath+os.sep+srtname, 'w', encoding='utf-8') as f:  f.write(srt.compose(final_subtitle))
+                    
 
 
     elif Running_Type == "actions":
