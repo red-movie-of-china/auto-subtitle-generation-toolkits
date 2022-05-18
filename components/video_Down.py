@@ -8,7 +8,7 @@ def aria2(url,name,args:str=""):
 def yt_dlp(url):
     ydl_opts = {"retries":10,
     # "write-thumbnail":True,
-            'outtmpl': './components/tmp' + '/' + '%(title)s.%(ext)s',
+            'outtmpl': './videos' + '/' + '%(title)s.%(ext)s',
             'format': 'bestvideo+bestaudio/best'}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         # info = ydl.extract_info(item['arcurl'])

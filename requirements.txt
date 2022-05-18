@@ -8,4 +8,4 @@ pytz
 yt_dlp
 pypinyin
 srt
-pydub
+ffsubsync

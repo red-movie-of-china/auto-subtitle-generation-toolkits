@@ -8,17 +8,24 @@ Draft subtitles for movies those take you look at the history of china and sprea
 
 ## yt-dlp video from youtube bunch of channels
 
+中华老电影 
+https://www.youtube.com/channel/UCqtWGeRnRk31h3Ykom2j2DQ
+
+老电影
 
 
 ## video cut into 60 minutes, get subtitle from audio and combine subtitile into final one 
 
 
 
+片头片尾 设定2分钟 通过silence检测 再结合pyscenedetect？
 ## subtitle and video sync
 
 ref 
 
 https://github.com/smacke/ffsubsync
+
+ffs video.mp4 -i unsynchronized.srt -o synchronized.srt
 
 ## translate chinese character in scenes without sound
 
