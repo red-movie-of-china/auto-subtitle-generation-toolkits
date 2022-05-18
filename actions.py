@@ -142,51 +142,60 @@ def videopreprocess(dir):
 #create video dir for each video
     basepath = os.path.abspath(dir)
     print('original video dir abs path',basepath)
+    onlydirs=[]
 
     media_list = [fn for fn in os.listdir(basepath) if any(fn.endswith(format) for format in ['.mp4','.avi','.mkv','.mov','.flv'])]
-    for f in media_list:
-        if '盗坤淘宝蓝海教程全集.' in f:
-            pass
-        name=f.split('.')[0]
-        ext=f.split('.')[-1]
+    if len(media_list)>0:
+        for f in media_list:
+            name=f.split('.')[0]
+            ext=f.split('.')[-1]
+            newvideoname=format_filename(name)
+            os.rename(join(basepath,f), join(basepath,newvideoname+'.'+ext)) 
+            print('format filename done',newvideoname)
 
-        # if not os.path.exists(basepath+name):
-            # os.makedirs(basepath+name)
-        # os.rename(join(basepath,f), join(basepath+os.sep+name,f)) 
-        newvideoname=format_filename(name)
-        print('=======??',newvideoname)
-        os.rename(join(basepath,f), join(basepath,newvideoname+'.'+ext)) 
-        name=newvideoname
-        os.system(f"echo Start convert video to audio only {name}")
-        # start = time.time()
-        # stop = time.time()
-        new =basepath+os.sep+name+'.aac'
-        if not os.path.exists(new):
-            print('audio is not here')
-            subprocess.Popen(f'ffmpeg -y -i "{basepath+os.sep+f}" -vn -codec copy "{new}"',shell=True,
-            stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL).wait()
-        stop1 = time.time()
-        os.system(f"echo Start split >120 minutes audio to parts {f}")
-        audiopath=join(basepath,name+'.aac')
-        if os.path.exists(audiopath):
-            pass
-        else:
-            print('audio is not here')
-            subprocess.Popen(f'ffmpeg -y -i "{basepath+os.sep+f}" -vn -codec copy "{new}"',shell=True,
-            stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL).wait()            
-        # split_to_clips_in_minutes(join(basepath,name+'.aac'),duration=60)
+            name=newvideoname
+            audiopath=join(basepath,newvideoname+'.aac')
 
-        # ffmpeg -i sourcefile.aac -f segment -segment_time 4 -c copy out/%03d.aac
-        onlydirs=[]
-        if os.path.exists(join(basepath,name+'.aac')):
-            print('start split audio',join(basepath,name+'.aac'))
-            if not os.path.exists(basepath+os.sep+name):
-                os.mkdir(basepath+os.sep+name)
-            print(f'ffmpeg -y -i "{audiopath}"  -f segment -segment_time 3600 -c copy "{basepath+os.sep+name}"/%01d.aac')
-            subprocess.Popen(f'ffmpeg -y -i "{audiopath}"  -f segment -segment_time 3600 -c copy "{basepath+os.sep+name}"/%01d.aac',shell=True,
-            stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL).wait()            
-            # split_audiofile(join(basepath,name+'.aac'),l=3600,remove=False)
-            onlydirs = [join(basepath,f) for f in os.listdir(basepath) if not isfile(join(basepath, f))]
+            videopath=basepath+os.sep+newvideoname+'.'+ext
+            os.system(f"echo Start convert video to audio only {name}")
+            # start = time.time()
+            # stop = time.time()
+            if not os.path.exists(audiopath):
+                isdone=subprocess.Popen(f'ffmpeg -y -i "{videopath}" -vn -codec copy "{audiopath}"', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                out, err = isdone.communicate()
+
+                if isdone.returncode == 0 and os.path.exists(join(basepath,newvideoname+'.aac')):
+                    print("video to audio Job done.")
+                else:
+                    print("video to audio ERROR",err)
+                    print(out)    
+            else:
+                print('video audio file is here',audiopath)
+            os.system(f"echo Start split >120 minutes audio to parts {audiopath}")
+
+            # split_to_clips_in_minutes(join(basepath,name+'.aac'),duration=60)
+
+            # ffmpeg -i sourcefile.aac -f segment -segment_time 4 -c copy out/%03d.aac
+            if os.path.exists(audiopath):
+                print('start split audio into 60 minutes clip',audiopath)
+                if not os.path.exists(basepath+os.sep+name):
+                    print('making new video dir for this video',basepath+os.sep+name)
+                    os.mkdir(basepath+os.sep+name)
+                print(f'ffmpeg -y -i "{audiopath}"  -f segment -segment_time 3600 -c copy "{basepath+os.sep+name}"/%01d.aac')
+
+                isdone= subprocess.Popen(f'ffmpeg -y -i "{audiopath}"  -f segment -segment_time 3600 -c copy "{basepath+os.sep+name}"/%01d.aac',shell=True,
+                stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL)
+                out, err = isdone.communicate()
+
+                if isdone.returncode == 0 and os.path.exists(join(basepath,newvideoname+'.aac')):
+                    print("split Job done.")
+                else:
+                    print("split Job ERROR",err)
+                    print(out)    
+
+
+                # split_audiofile(join(basepath,name+'.aac'),l=3600,remove=False)
+                onlydirs = [join(basepath,f) for f in os.listdir(basepath) if not isfile(join(basepath, f))]
     return onlydirs
 # iterate video dir,convert original video to audio, detect audio length >120 minutes,cut ,remove original audio
 
@@ -197,67 +206,67 @@ if __name__ == "__main__":
     if Running_Type == "local":
         Etcs().Get_Paths()
         videodirs=videopreprocess(Config['Sources_Path'])
+        if len(videodirs)>0:
+            Config["JianYing_App_Path"]=r'D:\Program Files (x86)\JianyingPro\JianyingPro.exe'
+            Actions().Took_Draft_Content_Path()
+            ui.CONFIG["draft_content_directory"] = Config["Draft_Content_Json"]
+            ui.CONFIG["JianYing_Exe_Path"] = Config["JianYing_App_Path"]
+            # preprocess video
+            for dir in videodirs:
+                print(dir,'=============')
+                start = time.time()
+                
+                ui.Multi_Video_Process(video_path=dir)
+                stop = time.time()
+                print('===convert srt time cost=====',stop-start)
 
-        Config["JianYing_App_Path"]=r'D:\Program Files (x86)\JianyingPro\JianyingPro.exe'
-        Actions().Took_Draft_Content_Path()
-        ui.CONFIG["draft_content_directory"] = Config["Draft_Content_Json"]
-        ui.CONFIG["JianYing_Exe_Path"] = Config["JianYing_App_Path"]
-        # preprocess video
-        for dir in videodirs:
-            print(dir,'=============')
-            start = time.time()
-            
-            ui.Multi_Video_Process(video_path=dir)
-            stop = time.time()
-            print('===convert srt time cost=====',stop-start)
+                # combine srt into whole
+                srt_list = [fn for fn in os.listdir(dir) if any(fn.endswith(format) for format in ['.srt'])]
+                final_subtitle=[]
+                td_to_shift  = datetime.timedelta(seconds=0)
+                # offset  = datetime.timedelta(seconds=0)
+                # total  = datetime.timedelta(seconds=0)
+                total=0
+                
+                for i in range(len(srt_list)):
+                    try:
+                        with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
+                            subtitles=list(srt.parse(f.read()))
+                            stream=av.open(dir+os.sep+str(i)+'.aac').streams.audio[0]
+                            duration=stream.duration/stream.time_base
+                            duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
+                            # seconds_to_shift=6000
+                            print('audio length',duration)
+                            td_to_shift = datetime.timedelta(seconds=(total))
+                            # if subtitles[-1].end>datetime.timedelta(seconds=3600):
+                            #     offset=subtitles[-1].end-datetime.timedelta(seconds=3600)
+                            #     total=total+offset
 
-            # combine srt into whole
-            srt_list = [fn for fn in os.listdir(dir) if any(fn.endswith(format) for format in ['.srt'])]
-            final_subtitle=[]
-            td_to_shift  = datetime.timedelta(seconds=0)
-            # offset  = datetime.timedelta(seconds=0)
-            # total  = datetime.timedelta(seconds=0)
-            total=0
-            
-            for i in range(len(srt_list)):
-                try:
-                    with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
-                        subtitles=list(srt.parse(f.read()))
-                        stream=av.open(dir+os.sep+str(i)+'.aac').streams.audio[0]
-                        duration=stream.duration/stream.time_base
-                        duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
-                        # seconds_to_shift=6000
-                        print('audio length',duration)
-                        td_to_shift = datetime.timedelta(seconds=(total))
-                        # if subtitles[-1].end>datetime.timedelta(seconds=3600):
-                        #     offset=subtitles[-1].end-datetime.timedelta(seconds=3600)
-                        #     total=total+offset
+                            # else:
+                            #     # offset=datetime.timedelta(seconds=0)
+                                
+                            #     offset=(datetime.timedelta(seconds=3600)-subtitles[-1].end)
+                            #     print('---------',total)
+                            #     print('=========',offset)
+                            #     total=total-offset
 
-                        # else:
-                        #     # offset=datetime.timedelta(seconds=0)
+                            print('i==',i,' 本字幕应偏移时间 ',td_to_shift,'本次偏移值',duration,'累计与标准偏移的差值',total)
+
+                            for subtitle in subtitles:
+                                subtitle.start += td_to_shift
+                                subtitle.end += td_to_shift
+                                final_subtitle.append(subtitle)
                             
-                        #     offset=(datetime.timedelta(seconds=3600)-subtitles[-1].end)
-                        #     print('---------',total)
-                        #     print('=========',offset)
-                        #     total=total-offset
+                            total=total+duration
 
-                        print('i==',i,' 本字幕应偏移时间 ',td_to_shift,'本次偏移值',duration,'累计与标准偏移的差值',total)
-
-                        for subtitle in subtitles:
-                            subtitle.start += td_to_shift
-                            subtitle.end += td_to_shift
-                            final_subtitle.append(subtitle)
-                        
-                        total=total+duration
-
-                except srt.SRTParseError:
-                    print('invalid srt found',i,' in this dir: ',dir)
-            
-            basepath = os.path.abspath(Config['Sources_Path'])
-            srtname=dir.split(os.sep)[-1]+'.srt'
-            print('final srt ',basepath+os.sep+srtname)
-            with open(basepath+os.sep+srtname, 'w', encoding='utf-8') as f:  f.write(srt.compose(final_subtitle))
-            
+                    except srt.SRTParseError:
+                        print('invalid srt found',i,' in this dir: ',dir)
+                
+                basepath = os.path.abspath(Config['Sources_Path'])
+                srtname=dir.split(os.sep)[-1]+'.srt'
+                print('final srt ',basepath+os.sep+srtname)
+                with open(basepath+os.sep+srtname, 'w', encoding='utf-8') as f:  f.write(srt.compose(final_subtitle))
+                
 
 
     elif Running_Type == "actions":
