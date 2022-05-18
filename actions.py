@@ -8,7 +8,6 @@ import uiautomation as auto
 import components.ui as ui
 import components.video_Down as vd
 from components.preprocess.split_audiobook import split_audiofile
-import av
 import string
 import srt
 from pydub import AudioSegment
@@ -234,8 +233,6 @@ if __name__ == "__main__":
                         try:
                             with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
                                 subtitles=list(srt.parse(f.read()))
-                                stream=av.open(dir+os.sep+str(i)+'.aac').streams.audio[0]
-                                duration=stream.duration/stream.time_base
                                 duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
                                 # seconds_to_shift=6000
                                 print('audio length',duration)
@@ -325,8 +322,6 @@ if __name__ == "__main__":
                                 try:
                                     with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
                                         subtitles=list(srt.parse(f.read()))
-                                        stream=av.open(dir+os.sep+str(i)+'.aac').streams.audio[0]
-                                        duration=stream.duration/stream.time_base
                                         duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
                                         # seconds_to_shift=6000
                                         print('audio length',duration)
