@@ -158,17 +158,22 @@ def videopreprocess(dir):
         os.rename(join(basepath,f), join(basepath,newvideoname+'.'+ext)) 
         name=newvideoname
         os.system(f"echo Start convert video to audio only {name}")
-        start = time.time()
-        stop = time.time()
+        # start = time.time()
+        # stop = time.time()
         new =basepath+os.sep+name+'.aac'
         if not os.path.exists(new):
             print('audio is not here')
             subprocess.Popen(f'ffmpeg -y -i "{basepath+os.sep+f}" -vn -codec copy "{new}"',shell=True,
             stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL).wait()
         stop1 = time.time()
-        print('========',stop1-stop,stop-start)
         os.system(f"echo Start split >120 minutes audio to parts {f}")
         audiopath=join(basepath,name+'.aac')
+        if os.path.exists(audiopath):
+            pass
+        else:
+            print('audio is not here')
+            subprocess.Popen(f'ffmpeg -y -i "{basepath+os.sep+f}" -vn -codec copy "{new}"',shell=True,
+            stderr=subprocess.DEVNULL,stdout=subprocess.DEVNULL).wait()            
         # split_to_clips_in_minutes(join(basepath,name+'.aac'),duration=60)
 
         # ffmpeg -i sourcefile.aac -f segment -segment_time 4 -c copy out/%03d.aac
