@@ -1,0 +1,11 @@
+wheel
+requests 
+pyautogui 
+uiautomation 
+pillow 
+keyboard 
+pytz
+yt_dlp
+pypinyin
+srt
+pydub
