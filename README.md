@@ -32,9 +32,15 @@ https://github.com/PantsuDango/Dango-Translator
 https://github.com/1c7/Translate-Subtitle-File
 
 ## peer review management portal for final release
+ref
+
+https://github.com/wanghaisheng/Translation-Management-Platform
 
 
-## TTS in other languages
+## speak in other languages through TTS
+
+mainly Tiktok TTS
+
 
 
 
