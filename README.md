@@ -6,6 +6,10 @@ Draft subtitles for movies those take you look at the history of china and sprea
 ## rewrite with airtest and upgrade jianying to latest 3.0 version
 
 
+## yt-dlp video from youtube bunch of channels
+
+
+
 ## video cut into 60 minutes, get subtitle from audio and combine subtitile into final one 
 
 
