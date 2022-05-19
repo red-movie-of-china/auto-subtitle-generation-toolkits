@@ -204,68 +204,71 @@ if __name__ == "__main__":
 
     if Running_Type == "local":
         Etcs().Get_Paths()
-        videodirs=videopreprocess(Config['Sources_Path'])
-        if len(videodirs)>0:
-            Config["JianYing_App_Path"]=r'D:\Program Files (x86)\JianyingPro\JianyingPro.exe'
-            Actions().Took_Draft_Content_Path()
-            ui.CONFIG["draft_content_directory"] = Config["Draft_Content_Json"]
-            ui.CONFIG["JianYing_Exe_Path"] = Config["JianYing_App_Path"]
-            # preprocess video
-            for dir in videodirs:
-                start = time.time()
-                basepath = os.path.abspath(Config['Sources_Path'])
-                srtname=dir.split(os.sep)[-1]+'.srt'
-                if not os.path.exists(basepath+os.sep+srtname):
+        for item in Config["keywords"]:
+            urls=save_videos_yt_dlp('','./videos','',query=item)
                 
-                    ui.Multi_Video_Process(video_path=dir)
-                    stop = time.time()
-                    print('===convert srt time cost=====',stop-start)
-
-                    # combine srt into whole
-                    srt_list = [fn for fn in os.listdir(dir) if any(fn.endswith(format) for format in ['.srt'])]
-                    final_subtitle=[]
-                    td_to_shift  = datetime.timedelta(seconds=0)
-                    # offset  = datetime.timedelta(seconds=0)
-                    # total  = datetime.timedelta(seconds=0)
-                    total=0
+            videodirs=videopreprocess(Config['Sources_Path'])
+            if len(videodirs)>0:
+                Config["JianYing_App_Path"]=r'D:\Program Files (x86)\JianyingPro\JianyingPro.exe'
+                Actions().Took_Draft_Content_Path()
+                ui.CONFIG["draft_content_directory"] = Config["Draft_Content_Json"]
+                ui.CONFIG["JianYing_Exe_Path"] = Config["JianYing_App_Path"]
+                # preprocess video
+                for dir in videodirs:
+                    start = time.time()
+                    basepath = os.path.abspath(Config['Sources_Path'])
+                    srtname=dir.split(os.sep)[-1]+'.srt'
+                    if not os.path.exists(basepath+os.sep+srtname):
                     
-                    for i in range(len(srt_list)):
-                        try:
-                            with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
-                                subtitles=list(srt.parse(f.read()))
-                                duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
-                                # seconds_to_shift=6000
-                                print('audio length',duration)
-                                td_to_shift = datetime.timedelta(seconds=(total))
-                                # try to use srt to compute offset ,but srt length is not audio file length at all
-                                # if subtitles[-1].end>datetime.timedelta(seconds=3600):
-                                #     offset=subtitles[-1].end-datetime.timedelta(seconds=3600)
-                                #     total=total+offset
+                        ui.Multi_Video_Process(video_path=dir)
+                        stop = time.time()
+                        print('===convert srt time cost=====',stop-start)
 
-                                # else:
-                                #     # offset=datetime.timedelta(seconds=0)
+                        # combine srt into whole
+                        srt_list = [fn for fn in os.listdir(dir) if any(fn.endswith(format) for format in ['.srt'])]
+                        final_subtitle=[]
+                        td_to_shift  = datetime.timedelta(seconds=0)
+                        # offset  = datetime.timedelta(seconds=0)
+                        # total  = datetime.timedelta(seconds=0)
+                        total=0
+                        
+                        for i in range(len(srt_list)):
+                            try:
+                                with open(dir+os.sep+str(i)+'.srt',encoding='utf-8') as f:
+                                    subtitles=list(srt.parse(f.read()))
+                                    duration=AudioSegment.from_file(dir+os.sep+str(i)+'.aac').duration_seconds
+                                    # seconds_to_shift=6000
+                                    print('audio length',duration)
+                                    td_to_shift = datetime.timedelta(seconds=(total))
+                                    # try to use srt to compute offset ,but srt length is not audio file length at all
+                                    # if subtitles[-1].end>datetime.timedelta(seconds=3600):
+                                    #     offset=subtitles[-1].end-datetime.timedelta(seconds=3600)
+                                    #     total=total+offset
+
+                                    # else:
+                                    #     # offset=datetime.timedelta(seconds=0)
+                                        
+                                    #     offset=(datetime.timedelta(seconds=3600)-subtitles[-1].end)
+                                    #     print('---------',total)
+                                    #     print('=========',offset)
+                                    #     total=total-offset
+
+                                    print('i==',i,' 本字幕应偏移时间 ',td_to_shift,'本次偏移值',duration,'累计与标准偏移的差值',total)
+
+                                    for subtitle in subtitles:
+                                        subtitle.start += td_to_shift
+                                        subtitle.end += td_to_shift
+                                        final_subtitle.append(subtitle)
                                     
-                                #     offset=(datetime.timedelta(seconds=3600)-subtitles[-1].end)
-                                #     print('---------',total)
-                                #     print('=========',offset)
-                                #     total=total-offset
+                                    total=total+duration
 
-                                print('i==',i,' 本字幕应偏移时间 ',td_to_shift,'本次偏移值',duration,'累计与标准偏移的差值',total)
+                            except srt.SRTParseError:
+                                print('invalid srt found',i,' in this dir: ',dir)
+                        
 
-                                for subtitle in subtitles:
-                                    subtitle.start += td_to_shift
-                                    subtitle.end += td_to_shift
-                                    final_subtitle.append(subtitle)
-                                
-                                total=total+duration
-
-                        except srt.SRTParseError:
-                            print('invalid srt found',i,' in this dir: ',dir)
-                    
-
-                    print('final srt ',basepath+os.sep+srtname)
-                    with open(basepath+os.sep+srtname, 'w', encoding='utf-8') as f:  f.write(srt.compose(final_subtitle))
-                    
+                        print('final srt ',basepath+os.sep+srtname)
+                        with open(basepath+os.sep+srtname, 'w', encoding='utf-8') as f:  f.write(srt.compose(final_subtitle))
+                        
 
 
     elif Running_Type == "actions":
