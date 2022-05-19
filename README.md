@@ -1,6 +1,6 @@
 # subtitle-generation-toolkits-without-costs
 
-Draft subtitles for movies those take you look at the history of china and spread spirit of chinese people.
+Draft subtitles for movies those give you a glimpse of  the history of Great china and spread spirit/virtue of chinese people.
 
 
 ## rewrite with airtest and upgrade jianying to latest 3.0 version
