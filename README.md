@@ -16,6 +16,11 @@ https://www.youtube.com/channel/UCqtWGeRnRk31h3Ykom2j2DQ
 
 ## video cut into 60 minutes, get subtitle from audio and combine subtitile into final one 
 
+导入剪映 字幕识别 字幕导出
+
+导入 https://tern.1c7.me/#/ 翻译目标语言的srt字幕
+
+
 
 
 片头片尾 设定2分钟 通过silence检测 再结合pyscenedetect？
